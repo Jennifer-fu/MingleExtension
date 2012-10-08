@@ -7,18 +7,22 @@ MingleUserName = 'admin'
 MinglePassword = '123456'
 
 TemplateName = 'Display_Team_Sprint_Overview'
-MaxWellURI = 'api/v2/projects/maxwell'
+MaxWellURI = 'api/v2/projects/mingleapitest'
 URLForGettingTemplate = "http://#{MingleServerAndPort}/#{MaxWellURI}/wiki/#{TemplateName}.xml"
 URLForAddingWiki = "http://#{MingleUserName}:#{MinglePassword}@#{MingleServerAndPort}/#{MaxWellURI}/wiki.xml"
 
 WikiPageName = 'test wiki page'
 
+ARGV.each do |a|
+  puts "#{a}"
+end
+
 tagsAndValues = {
-    %r{\(Current Sprint Order\)} => %q{'3'},
-    %r{\(Current Sprint\)} => %q{'Sprint 3'},
-    %r{\(Current Sprint Start Date\)} => %q{'2012-09-20'},
-    %r{\(Current Sprint End Date\)} => %q{'2012-10-01'},
-    %r{\(Current Release\)} => %q{'Release 1'}
+    %r{\(Current Sprint Order\)} => %Q{"#{ARGV[0]}"},
+    %r{\(Current Sprint\)} => %Q{"#{ARGV[1]}"},
+    %r{\(Current Sprint Start Date\)} => %Q{"#{ARGV[2]}"},
+    %r{\(Current Sprint End Date\)} => %Q{"#{ARGV[3]}"},
+    %r{\(Current Release\)} => %Q{"#{ARGV[4]}"}
 }
 
 def replaceTagsWithValues content, tagsAndValues
@@ -28,6 +32,7 @@ end
 def wikiPageName prefix, tagsAndValues
   prefix + ' | ' + tagsAndValues[%r{\(Current Sprint\)}][1..-2]
 end
+
 
 open(URLForGettingTemplate, :http_basic_authentication => [MingleUserName, MinglePassword]) do |f|
   templatePage = REXML::Document.new(f)
