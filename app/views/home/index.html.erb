@@ -1,8 +1,21 @@
 <h1>Generate Overview</h1>
-<dl>
-	<dt>Sprint Order:</dt>
-	<dd><input name='sprint_order'/></dd>
-</dl>
-<div>
-	<input type='submit' value='Submit'/>
-</div>
+
+<%= form_tag("home/generate", :method => "post") do %>
+  <div class='overview_params'>
+  <%= label_tag(:sprint_order, "Sprint Order:") %>
+  <%= text_field_tag(:sprint_order) %>
+  </div>
+  <div class='overview_params'>
+  <%= label_tag(:sprint_start_date, "Sprint Start Date:") %>
+  <%= text_field_tag(:sprint_start_date) %>
+  </div>
+  <div class='overview_params'>
+  <%= label_tag(:sprint_end_date, "Sprint End Date:") %>
+  <%= text_field_tag(:sprint_end_date) %>
+  </div>  
+  <div class='overview_params'>
+  <%= label_tag(:release_order, "Release Order:") %>
+  <%= text_field_tag(:release_order) %>
+  </div>
+  <%= submit_tag("Generate") %>
+<% end %>

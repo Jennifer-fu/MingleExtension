@@ -6,6 +6,7 @@ MingleScript::Application.routes.draw do
 
   # Sample of regular route:
   #   match 'products/:id' => 'catalog#view'
+     match 'home/generate' => 'home#generate'
   # Keep in mind you can assign values other than :controller and :action
 
   # Sample of named route:
@@ -14,7 +15,6 @@ MingleScript::Application.routes.draw do
 
   # Sample resource route (maps HTTP verbs to controller actions automatically):
   #   resources :products
-
   # Sample resource route with options:
   #   resources :products do
   #     member do

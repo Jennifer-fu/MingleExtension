@@ -2,9 +2,11 @@ require "rexml/document"
 require "open-uri"
 require "net/http"
 
-module OverviewScript
-  extend self
-
+class Overview
+  attr_accessor :sprint_order
+  attr_accessor :sprint_start_date
+  attr_accessor :sprint_end_date
+  attr_accessor :release_order
   MingleServerAndPort = '163.184.134.16:8080'
   MingleUserName = 'admin'
   MinglePassword = '123456'
@@ -18,13 +20,13 @@ module OverviewScript
   URLForAddingWiki = "http://#{MingleUserName}:#{MinglePassword}@#{MingleServerAndPort}/#{MaxWellURI}/wiki.xml"
 
   def generateOverviews
-
+    puts sprint_order
     tagsAndValues = {
-        %r{\(Current Sprint Order\)} => %Q{"#{ARGV[0]}"},
-        %r{\(Current Sprint\)} => %Q{"#{ARGV[1]}"},
-        %r{\(Current Sprint Start Date\)} => %Q{"#{ARGV[2]}"},
-        %r{\(Current Sprint End Date\)} => %Q{"#{ARGV[3]}"},
-        %r{\(Current Release\)} => %Q{"#{ARGV[4]}"}
+        %r{\(Current Sprint Order\)} => %Q{"#{sprint_order}"},
+        %r{\(Current Sprint\)} => %Q{"Sprint #{sprint_order}"},
+        %r{\(Current Sprint Start Date\)} => %Q{"#{sprint_start_date}"},
+        %r{\(Current Sprint End Date\)} => %Q{"#{sprint_end_date}"},
+        %r{\(Current Release\)} => %Q{"Release #{release_order}"}
     }
 
     def replaceTagsWithValues content, tagsAndValues
@@ -51,5 +53,5 @@ module OverviewScript
 
 end
 
-OverviewScript.generateOverviews
+#OverviewScript.generateOverviews
 
