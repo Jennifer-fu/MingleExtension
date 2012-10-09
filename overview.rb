@@ -15,16 +15,17 @@ module OverviewScript
                   'Environment_CI_Team_Sprint_Overview']
 
   MaxWellURI = 'api/v2/projects/mingleapitest'
+  ScriptTemplatesURI = "api/v2/projects/mingle_script_templates"
   URLForAddingWiki = "http://#{MingleUserName}:#{MinglePassword}@#{MingleServerAndPort}/#{MaxWellURI}/wiki.xml"
 
-  def generateOverviews
+  def generateOverviews releaseOrder, sprintOrder, sprintStartDate, sprintEndDate
 
     tagsAndValues = {
-        %r{\(Current Sprint Order\)} => %Q{"#{ARGV[0]}"},
-        %r{\(Current Sprint\)} => %Q{"#{ARGV[1]}"},
-        %r{\(Current Sprint Start Date\)} => %Q{"#{ARGV[2]}"},
-        %r{\(Current Sprint End Date\)} => %Q{"#{ARGV[3]}"},
-        %r{\(Current Release\)} => %Q{"#{ARGV[4]}"}
+        %r{\(Current Sprint Order\)} => %Q{"#{sprintOrder}"},
+        %r{\(Current Sprint\)} => %Q{"Sprint #{sprintOrder}"},
+        %r{\(Current Sprint Start Date\)} => %Q{"#{sprintStartDate}"},
+        %r{\(Current Sprint End Date\)} => %Q{"#{sprintEndDate}"},
+        %r{\(Current Release\)} => %Q{"Release #{releaseOrder}"}
     }
 
     def replaceTagsWithValues content, tagsAndValues
@@ -36,7 +37,7 @@ module OverviewScript
     end
 
     TemplateNames.each { |templateName|
-      urlForGettingTemplate = "http://#{MingleServerAndPort}/#{MaxWellURI}/wiki/#{templateName}.xml"
+      urlForGettingTemplate = "http://#{MingleServerAndPort}/#{ScriptTemplatesURI}/wiki/#{templateName}.xml"
 
       open(urlForGettingTemplate, :http_basic_authentication => [MingleUserName, MinglePassword]) do |f|
         templatePage = REXML::Document.new(f)
@@ -51,5 +52,5 @@ module OverviewScript
 
 end
 
-OverviewScript.generateOverviews
+OverviewScript.generateOverviews ARGV[0], ARGV[1], ARGV[2], ARGV[3]
 
