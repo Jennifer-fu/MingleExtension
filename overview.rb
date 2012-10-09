@@ -20,11 +20,11 @@ module OverviewScript
   def generateOverviews
 
     tagsAndValues = {
-        %r{\(Current Sprint Order\)} => %q{'3'},
-        %r{\(Current Sprint\)} => %q{'Sprint 3'},
-        %r{\(Current Sprint Start Date\)} => %q{'2012-09-20'},
-        %r{\(Current Sprint End Date\)} => %q{'2012-10-01'},
-        %r{\(Current Release\)} => %q{'Release 1'}
+        %r{\(Current Sprint Order\)} => %Q{"#{ARGV[0]}"},
+        %r{\(Current Sprint\)} => %Q{"#{ARGV[1]}"},
+        %r{\(Current Sprint Start Date\)} => %Q{"#{ARGV[2]}"},
+        %r{\(Current Sprint End Date\)} => %Q{"#{ARGV[3]}"},
+        %r{\(Current Release\)} => %Q{"#{ARGV[4]}"}
     }
 
     def replaceTagsWithValues content, tagsAndValues
