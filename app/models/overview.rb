@@ -1,26 +1,40 @@
 require "rexml/document"
 require "open-uri"
 require "net/http"
+require "mingleAPIHelper"
 
 class Overview
+  include MingleAPIHelper
+  
   attr_accessor :sprint_order
   attr_accessor :sprint_start_date
   attr_accessor :sprint_end_date
   attr_accessor :release_order
-  MingleServerAndPort = '163.184.134.16:8080'
-  MingleUserName = 'admin'
-  MinglePassword = '123456'
 
   TemplateNames = ['Display_Team_Sprint_Overview', 'Data1_Team_Sprint_Overview',
                   'Data2_Team_Sprint_Overview', 'Performance_Team_Sprint_Overview',
                   'Workflow_DM_Team_Sprint_Overview', 'Workflow_WL_Team_Sprint_Overview',
                   'Environment_CI_Team_Sprint_Overview']
 
-  MaxWellURI = 'api/v2/projects/mingleapitest'
-  URLForAddingWiki = "http://#{MingleUserName}:#{MinglePassword}@#{MingleServerAndPort}/#{MaxWellURI}/wiki.xml"
+  MaxWellURI = '/api/v2/projects/mingleapitest'
 
   def generateOverviews
-    puts sprint_order
+    generateOverviewsAccordingToTemplates
+    updateOverviewList
+  end
+
+  def generateOverviewsAccordingToTemplates
+
+    def replaceTagsWithValues(content, tagsAndValues)
+      tagsAndValues.to_a.inject(content) { |content, tagAndValue| content.gsub(tagAndValue[0], tagAndValue[1]) }
+    end
+
+    def wikiPageName(prefix, tagsAndValues)
+      prefix + ' - ' + tagsAndValues[%r{\(Current Sprint\)}][1..-2]
+    end
+
+    scriptTemplatesURI = "/api/v2/projects/mingle_script_templates"
+
     tagsAndValues = {
         %r{\(Current Sprint Order\)} => %Q{"#{sprint_order}"},
         %r{\(Current Sprint\)} => %Q{"Sprint #{sprint_order}"},
@@ -29,29 +43,51 @@ class Overview
         %r{\(Current Release\)} => %Q{"Release #{release_order}"}
     }
 
-    def replaceTagsWithValues content, tagsAndValues
-      tagsAndValues.to_a.inject(content) { |content, tagAndValue| content.gsub(tagAndValue[0], tagAndValue[1]) }
-    end
-
-    def wikiPageName prefix, tagsAndValues
-      prefix + ' | ' + tagsAndValues[%r{\(Current Sprint\)}][1..-2]
-    end
-
     TemplateNames.each { |templateName|
-      urlForGettingTemplate = "http://#{MingleServerAndPort}/#{MaxWellURI}/wiki/#{templateName}.xml"
-
-      open(urlForGettingTemplate, :http_basic_authentication => [MingleUserName, MinglePassword]) do |f|
-        templatePage = REXML::Document.new(f)
-        templateContent = replaceTagsWithValues(templatePage.elements['page/content'].text, tagsAndValues)
-
-        Net::HTTP.post_form(URI.parse(URLForAddingWiki),
-                            {'page[name]' => wikiPageName(templateName, tagsAndValues),
-                             'page[content]' => templateContent})
-      end
+      text = askMingle("#{scriptTemplatesURI}/wiki/#{templateName}.xml", %q{//page/content}).first
+      putToMingle("#{MaxWellURI}/wiki.xml",
+                  {'page[name]' => wikiPageName(templateName, tagsAndValues),
+                  'page[content]' => replaceTagsWithValues(text, tagsAndValues)})
     }
   end
 
+  def updateOverviewList
+
+    def findHowManySprintOverviewsAlreadyInTheProject
+      askMingle("#{MaxWellURI}/wiki.xml", %q{//page[contains(name, ' - Sprint')]/name}).inject([]) { |numbers, text|
+        numbers << text[/\s-\sSprint\s([0-9]+)$/, 1]
+      }.uniq
+    end
+
+    def generateContentOfSprintOverviewList(teamName, sprintNumbers)
+      header = <<-HEADER
+        {% dashboard-panel %}
+        {% panel-heading %}#{teamName} Sprint Overview{% panel-heading %}
+        {% panel-content %}
+      HEADER
+
+      footer = <<-FOOTER
+        {% panel-content %}
+        {% dashboard-panel %}
+      FOOTER
+
+      sprintNumbers.inject(header) { |content, number|
+        content << "[[#{teamName} Sprint Overview - Sprint #{number}]]<br/>\n"
+      } << footer
+    end
+
+    def getTeamName(templateName)
+      templateName[/(\w+)_Sprint_Overview/, 1].gsub(/_/, ' ')
+    end
+
+    def updateOverview(templateName, content)
+      putToMingle("#{MaxWellURI}/wiki/#{templateName}.xml", "page[content]=#{content}")
+    end
+
+    TemplateNames.each do |templateName|
+      sprintNumbers = findHowManySprintOverviewsAlreadyInTheProject
+      overviewContent = generateContentOfSprintOverviewList(getTeamName(templateName), sprintNumbers)
+      updateOverview(templateName, overviewContent)
+    end
+  end
 end
-
-#OverviewScript.generateOverviews
-
