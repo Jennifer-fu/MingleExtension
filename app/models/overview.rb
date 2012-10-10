@@ -9,7 +9,7 @@ class Overview
   attr_accessor :sprint_order
   attr_accessor :sprint_start_date
   attr_accessor :sprint_end_date
-  attr_accessor :release_order
+  attr_accessor :release_name
 
   TemplateNames = ['Display_Team_Sprint_Overview', 'Data1_Team_Sprint_Overview',
                   'Data2_Team_Sprint_Overview', 'Performance_Team_Sprint_Overview',
@@ -17,7 +17,7 @@ class Overview
                   'Environment_CI_Team_Sprint_Overview']
 
   MaxWellURI = '/api/v2/projects/mingleapitest'
-
+  
   def generateOverviews
     generateOverviewsAccordingToTemplates
     updateOverviewList
@@ -29,24 +29,30 @@ class Overview
       tagsAndValues.to_a.inject(content) { |content, tagAndValue| content.gsub(tagAndValue[0], tagAndValue[1]) }
     end
 
-    def wikiPageName(prefix, tagsAndValues)
-      prefix + ' - ' + tagsAndValues[%r{\(Current Sprint\)}][1..-2]
+    def wikiPageName(prefix, sprint)
+      prefix + ' - ' + sprint
     end
 
     scriptTemplatesURI = "/api/v2/projects/mingle_script_templates"
 
+    current_sprint_order = %r{\(Current Sprint Order\)}i
+    current_sprint = %r{\(Current Sprint\)}i
+    current_sprint_start_date = %r{\(Current Sprint Start Date\)}i
+    current_sprint_end_date = %r{\(Current Sprint End Date\)}i
+    current_release = %r{\(Current Release\)}i 
+
     tagsAndValues = {
-        %r{\(Current Sprint Order\)} => %Q{"#{sprint_order}"},
-        %r{\(Current Sprint\)} => %Q{"Sprint #{sprint_order}"},
-        %r{\(Current Sprint Start Date\)} => %Q{"#{sprint_start_date}"},
-        %r{\(Current Sprint End Date\)} => %Q{"#{sprint_end_date}"},
-        %r{\(Current Release\)} => %Q{"Release #{release_order}"}
+        current_sprint_order => "#{sprint_order}",
+        current_sprint => "\'Sprint #{sprint_order}\'",
+        current_sprint_start_date => "\'#{sprint_start_date}\'",
+        current_sprint_end_date => "\'#{sprint_end_date}\'",
+        current_release => "\'#{release_name}\'"
     }
 
     TemplateNames.each { |templateName|
       text = askMingle("#{scriptTemplatesURI}/wiki/#{templateName}.xml", %q{//page/content}).first
       putToMingle("#{MaxWellURI}/wiki.xml",
-                  {'page[name]' => wikiPageName(templateName, tagsAndValues),
+                  {'page[name]' => wikiPageName(templateName, tagsAndValues[current_sprint][1..-2]),
                   'page[content]' => replaceTagsWithValues(text, tagsAndValues)})
     }
   end
