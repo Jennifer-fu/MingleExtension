@@ -16,21 +16,23 @@ module MingleAPIHelper
     end
   end
 
-  def putToMingle(apiURI, data)
-    if data.is_a? String
-      putRequest = Net::HTTP::Put.new(apiURI)
-      putRequest.basic_auth(MingleUserName, MinglePassword)
-      putRequest.body = data
-    else
-      if data.is_a? Hash
-        putRequest = Net::HTTP::Post.new(apiURI)
-        putRequest.basic_auth(MingleUserName, MinglePassword)
-        putRequest.form_data = data
-      else
-        raise 'data must be String or Hash type'
-      end
-    end
-
+  def get_response apiURI
+    request = Net::HTTP::Get.new(apiURI)
+    request.basic_auth(MingleUserName, MinglePassword)
+    Net::HTTP.new(MingleServer, MingleServerPort).start { |http| http.request(request)}
+  end
+  
+  def update apiURI, data
+    putRequest = Net::HTTP::Put.new(apiURI)
+    putRequest.basic_auth(MingleUserName, MinglePassword)
+    putRequest.body = data
+    Net::HTTP.new(MingleServer, MingleServerPort).start { |http| http.request(putRequest) }
+  end
+  
+  def create apiURI, data
+    putRequest = Net::HTTP::Post.new(apiURI)
+    putRequest.basic_auth(MingleUserName, MinglePassword)
+    putRequest.form_data = data
     Net::HTTP.new(MingleServer, MingleServerPort).start { |http| http.request(putRequest) }
   end
 end

@@ -17,6 +17,7 @@ class Overview
                   'Environment_CI_Team_Sprint_Overview']
 
   MaxWellURI = '/api/v2/projects/mingleapitest'
+  MaxWellWikiURI = "#{MaxWellURI}/wiki.xml"
   
   def generateOverviews
     generateOverviewsAccordingToTemplates
@@ -49,18 +50,29 @@ class Overview
         current_release => "\'#{release_name}\'"
     }
 
-    TemplateNames.each { |templateName|
+    TemplateNames.each do |templateName|
       text = askMingle("#{scriptTemplatesURI}/wiki/#{templateName}.xml", %q{//page/content}).first
-      putToMingle("#{MaxWellURI}/wiki.xml",
-                  {'page[name]' => wikiPageName(templateName, tagsAndValues[current_sprint][1..-2]),
-                  'page[content]' => replaceTagsWithValues(text, tagsAndValues)})
-    }
+      wiki_page_name = wikiPageName(templateName, tagsAndValues[current_sprint][1..-2])
+      wiki_page_content = replaceTagsWithValues(text, tagsAndValues)
+      templateURI = "#{MaxWellURI}/wiki/#{wiki_page_name.gsub(/\s/,'_')}.xml"
+
+      response = get_response(templateURI)
+      if response.code == "404"
+        create MaxWellWikiURI, {'page[name]' => wiki_page_name,'page[content]' => wiki_page_content}
+      else 
+        if response.code == "200"
+          update templateURI, "page[content]=#{wiki_page_content}"
+        else
+          raise "response code #{response.code}"
+        end
+      end
+    end
   end
 
   def updateOverviewList
 
     def findHowManySprintOverviewsAlreadyInTheProject
-      askMingle("#{MaxWellURI}/wiki.xml", %q{//page[contains(name, ' - Sprint')]/name}).inject([]) { |numbers, text|
+      askMingle(MaxWellWikiURI, %q{//page[contains(name, ' - Sprint')]/name}).inject([]) { |numbers, text|
         numbers << text[/\s-\sSprint\s([0-9]+)$/, 1]
       }.uniq
     end
@@ -87,7 +99,7 @@ class Overview
     end
 
     def updateOverview(templateName, content)
-      putToMingle("#{MaxWellURI}/wiki/#{templateName}.xml", "page[content]=#{content}")
+      update("#{MaxWellURI}/wiki/#{templateName}.xml", "page[content]=#{content}")
     end
 
     TemplateNames.each do |templateName|
