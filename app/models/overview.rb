@@ -89,7 +89,7 @@ class Overview
         {% dashboard-panel %}
       FOOTER
 
-      sprintNumbers.inject(header) { |content, number|
+      sprintNumbers.sort{|a,b| b<=>a}.inject(header) { |content, number|
         content << "[[#{teamName} Sprint Overview - Sprint #{number}]]<br/>\n"
       } << footer
     end
