@@ -16,7 +16,7 @@ class Overview
                   'Workflow_DM_Team_Sprint_Overview', 'Workflow_WL_Team_Sprint_Overview',
                   'Environment_CI_Team_Sprint_Overview']
 
-  MaxWellURI = '/api/v2/projects/mingleapitest'
+  MaxWellURI = '/api/v2/projects/maxwell'
   MaxWellWikiURI = "#{MaxWellURI}/wiki.xml"
   
   def generateOverviews
@@ -89,7 +89,7 @@ class Overview
         {% dashboard-panel %}
       FOOTER
 
-      sprintNumbers.sort{|a,b| b<=>a}.inject(header) { |content, number|
+      sprintNumbers.collect{|s| s.to_i}.sort{|a,b| b<=>a}.inject(header) { |content, number|
         content << "[[#{teamName} Sprint Overview - Sprint #{number}]]<br/>\n"
       } << footer
     end

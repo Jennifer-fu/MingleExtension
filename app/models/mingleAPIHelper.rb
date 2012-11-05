@@ -4,7 +4,7 @@ module MingleAPIHelper
   MingleServer = '163.184.134.16'
   MingleServerPort = '8080'
   MingleUserName = 'admin'
-  MinglePassword = '123456'
+  MinglePassword = '123123'
 
   def askMingle(apiURI, xpath)
     Enumerator.new do |y|

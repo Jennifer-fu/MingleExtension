@@ -3,4 +3,15 @@
 /db/*.sqlite3
 /log/*.log
 /tmp
-.DS_Store
+.DS_Storeapp/views/layouts/._application.html.er
+app/views/layouts/._application.html.er
+app/views/layouts/._application.html.er
+app/models/nohup.out
+app/models/._overview.rb
+app/models/._mingleAPIHelper.rb
+app/models/._.DS_Store
+app/helpers/._home_helper.rb
+app/controllers/._home_controller.rb
+app/controllers/._application_controller.rb
+app/assets/stylesheets/._home.css.scss
+app/._.DS_Store
